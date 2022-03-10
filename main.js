@@ -156,14 +156,15 @@ const onSaveSettingClickHandler = () => {
   currentSetting.playerName = $("#player_name").val();
   currentSetting.totalCards = $("#num_cards").val();
   if (
+    localStorage.getItem("playerName") &&
     localStorage.getItem("playerName").toLowerCase() !=
-    currentSetting.playerName.toLowerCase()
+      currentSetting.playerName.toLowerCase()
   ) {
     localStorage.removeItem("high_score");
   }
   localStorage.setItem("playerName", currentSetting.playerName);
   localStorage.setItem("totalCards", currentSetting.totalCards);
-  window.location = "/";
+  window.location = "./index.html";
 };
 
 $(document).ready(() => {
