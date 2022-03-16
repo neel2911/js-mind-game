@@ -198,12 +198,16 @@ $(document).ready(() => {
     }
     $("#player").html(`Player : ${currentSetting.playerName}`);
     imagesEl = "";
+    let ids = 0;
     for (let i = 0; i < currentArrangement[0]; i++) {
       for (let j = 0; j < currentArrangement[1]; j++) {
         const imgUrl = generateImageUrl(images.backCard);
-        imagesEl += `<a href="#" id=${imgUrl}><img id="img_${i + j}" cardid="${
-          suffledCard[i + j].split(".")[0]
-        }" class="card" src="${imgUrl}" alt="card" /></a>`;
+        imagesEl += `<div>
+        <img id="img_${ids}" cardid="${
+          suffledCard[ids].split(".")[0]
+        }" class="card" src="${imgUrl}" alt="card" />
+        </div>`;
+        ids++;
       }
     }
   }

@@ -37,6 +37,11 @@ header p {
 #cards {
   display: inline-block;
 }
+
+#cards div {
+  display: inline-block;
+}
+
 #cards img {
   height: 100px;
   width: 80px;
