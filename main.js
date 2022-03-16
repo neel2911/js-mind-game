@@ -200,15 +200,17 @@ $(document).ready(() => {
     imagesEl = "";
     let ids = 0;
     for (let i = 0; i < currentArrangement[0]; i++) {
+      imagesEl += "<div>";
       for (let j = 0; j < currentArrangement[1]; j++) {
         const imgUrl = generateImageUrl(images.backCard);
-        imagesEl += `<div>
+        imagesEl += `<a href="#">
         <img id="img_${ids}" cardid="${
           suffledCard[ids].split(".")[0]
         }" class="card" src="${imgUrl}" alt="card" />
-        </div>`;
+        </a>`;
         ids++;
       }
+      imagesEl += "</div>";
     }
   }
   $("#cards").html(imagesEl);
