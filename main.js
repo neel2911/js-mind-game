@@ -1,3 +1,8 @@
+// Group 6
+// Mahalekamge, Anushka, 
+// Gurijala, Prashanth Kumar, 
+// Patel, Neel Vinodbhai, 
+
 const grid = {
   8: [1, 8],
   16: [2, 8],
@@ -203,7 +208,7 @@ $(document).ready(() => {
       imagesEl += "<div>";
       for (let j = 0; j < currentArrangement[1]; j++) {
         const imgUrl = generateImageUrl(images.backCard);
-        imagesEl += `<a href="#">
+        imagesEl += `<a id="${imgUrl}" href="#">
         <img id="img_${ids}" cardid="${
           suffledCard[ids].split(".")[0]
         }" class="card" src="${imgUrl}" alt="card" />
