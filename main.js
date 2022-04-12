@@ -1,8 +1,3 @@
-// Group 6
-// Mahalekamge, Anushka, 
-// Gurijala, Prashanth Kumar, 
-// Patel, Neel Vinodbhai, 
-
 const grid = {
   8: [1, 8],
   16: [2, 8],
