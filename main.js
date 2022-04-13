@@ -1,219 +1,92 @@
-const grid = {
-  8: [1, 8],
-  16: [2, 8],
-  24: [3, 8],
-  32: [4, 8],
-  40: [5, 8],
-  48: [6, 8],
-};
-
-let suffledCard = [];
-
-const images = {
-  cards: [
-    "card_1.png",
-    "card_2.png",
-    "card_3.png",
-    "card_4.png",
-    "card_5.png",
-    "card_6.png",
-    "card_7.png",
-    "card_8.png",
-    "card_9.png",
-    "card_10.png",
-    "card_11.png",
-    "card_12.png",
-    "card_13.png",
-    "card_14.png",
-    "card_15.png",
-    "card_16.png",
-    "card_17.png",
-    "card_18.png",
-    "card_19.png",
-    "card_20.png",
-    "card_21.png",
-    "card_22.png",
-    "card_23.png",
-    "card_24.png",
-  ],
-  blankCard: "blank.png",
-  backCard: "back.png",
-};
-
-const match = {
-  firstSelection: {
-    originalId: "",
-    selectedId: "",
-  },
-  secondSelection: {
-    originalId: "",
-    selectedId: "",
-  },
-  totalClick: 0,
-  correctSelectionClick: 0,
-};
-
-const currentSetting = {};
-
-const prepareRandomCards = (cards) => {
-  const tempSet1 = [...cards];
-  const tempSet2 = [...cards];
-  let noOfSuffles = tempSet1.length;
-  noOfSuffles = Math.ceil(Math.random() * (noOfSuffles - 1 + 1) + 1);
-  for (let i = 0; i < noOfSuffles; i++) {
-    const removedValue = tempSet1.pop();
-    tempSet1.unshift(removedValue);
-  }
-  noOfSuffles = Math.ceil(Math.random() * (noOfSuffles - 1 + 1) + 1);
-  for (let i = 0; i < noOfSuffles; i++) {
-    const removedValue = tempSet2.shift();
-    tempSet2.push(removedValue);
-  }
-  return [...tempSet1, ...tempSet2];
-};
-
-const generateImageUrl = (fileName) => {
-  return `images/${fileName}`;
-};
-
-const toggleCard = (card, changeTo, isMatched = false) => {
-  $(card).fadeOut(function () {
-    $(this)
-      .attr("src", `${generateImageUrl(changeTo)}`)
-      .attr("ismatched", isMatched)
-      .fadeIn();
-  });
+const selection = {
+  firstCard: null,
+  secondCard: null,
 };
 
 const resetSelection = () => {
-  match.firstSelection.originalId = "";
-  match.firstSelection.selectedId = "";
-  match.secondSelection.originalId = "";
-  match.secondSelection.selectedId = "";
+  selection.firstCard = null;
+  selection.secondCard = null;
 };
 
 const onImgClickHandler = function (e) {
-  const card = e.target;
-  console.log(match.firstSelection);
-  console.log(match.secondSelection);
   if (
-    card.classList.contains("card") &&
-    ["false", null].includes(card.getAttribute("ismatched")) &&
-    (match.firstSelection.selectedId == "" ||
-      match.secondSelection.selectedId == "")
+    $(e.target).hasClass("flip-box-inner") &&
+    (!selection.firstCard || !selection.secondCard)
   ) {
-    if (!match.firstSelection.originalId) {
-      match.firstSelection.originalId = card.id;
-      match.firstSelection.selectedId = card.getAttribute("cardid");
-      toggleCard(card, suffledCard[card.id.split("_")[1]]);
-    } else {
-      if (match.firstSelection.originalId != card.id) {
-        if (!match.secondSelection.originalId) {
-          match.secondSelection.originalId = card.id;
-          match.secondSelection.selectedId = card.getAttribute("cardid");
-          toggleCard(card, suffledCard[card.id.split("_")[1]]);
-        }
+    if (selection.firstCard && !$(e.target).parent().hasClass("clicked")) {
+      selection.secondCard = new Card($(e.target));
+      if (!selection.secondCard.checkIsBlank()) {
+        cards.toggleCard($(e.target).parent());
+      }
+      if (selection.firstCard.isMatched(selection.secondCard)) {
         setTimeout(() => {
-          if (
-            match.firstSelection.selectedId == match.secondSelection.selectedId
-          ) {
-            match.totalClick += 1;
-            match.correctSelectionClick += 1;
-            toggleCard(
-              `#${match.firstSelection.originalId}`,
-              images.blankCard,
-              true
-            );
-            toggleCard(
-              `#${match.secondSelection.originalId}`,
-              images.blankCard,
-              true
-            );
-            resetSelection();
-            if (match.correctSelectionClick == suffledCard.length / 2) {
-              const score = parseInt(
-                (match.correctSelectionClick * 100) / match.totalClick
-              );
-              if (score > localStorage.getItem("high_score")) {
-                localStorage.setItem("high_score", score);
-                $("#high_score").html(`High score : ${score}%`);
-              }
-              $("#correct").html(`Score : ${score}%`);
-            }
-          } else {
-            match.totalClick += 1;
-            toggleCard(`#${match.firstSelection.originalId}`, images.backCard);
-            toggleCard(`#${match.secondSelection.originalId}`, images.backCard);
-            resetSelection();
+          scores.updateTotalClicks();
+          scores.updateCorrectClicks();
+          cards.fadeOutCard($(selection.firstCard.imageEl).parent());
+          cards.fadeOutCard($(selection.secondCard.imageEl).parent());
+          resetSelection();
+          if (scores.correctMatch == cards.suffledCard.length / 2) {
+            $("#high_score").html(`High score : ${scores.highScore}%`);
           }
-        }, 1000);
+          $("#correct").html(`Score : ${scores.checkAndGetScore()}%`);
+        }, 500);
+      } else {
+        setTimeout(() => {
+          scores.updateTotalClicks();
+          cards.toggleCard(
+            $(selection.firstCard.imageEl).parent().parent(),
+            true
+          );
+          cards.toggleCard(
+            $(selection.secondCard.imageEl).parent().parent(),
+            true
+          );
+          resetSelection();
+        }, 500);
+      }
+    } else {
+      selection.firstCard = new Card($(e.target));
+      if (!selection.firstCard.checkIsBlank()) {
+        cards.toggleCard($(e.target).parent());
       }
     }
   }
 };
 
 const onSaveSettingClickHandler = () => {
-  currentSetting.playerName = $("#player_name").val();
-  currentSetting.totalCards = $("#num_cards").val();
-  if (
-    localStorage.getItem("playerName") &&
-    localStorage.getItem("playerName").toLowerCase() !=
-      currentSetting.playerName.toLowerCase()
-  ) {
-    localStorage.removeItem("high_score");
+  let currentSetting = settings.val;
+  if ($("#player_name").val() != currentSetting.playerName) {
+    scores.removeHighScore();
   }
-  localStorage.setItem("playerName", currentSetting.playerName);
-  localStorage.setItem("totalCards", currentSetting.totalCards);
+  settings.val = {
+    name: $("#player_name").val(),
+    totalCards: $("#num_cards").val(),
+  };
+
   window.location = "./index.html";
 };
 
 $(document).ready(() => {
   $("#tabs").tabs();
-
-  if (localStorage.getItem("playerName")) {
-    currentSetting.playerName = localStorage.getItem("playerName");
-    $("#player_name").val(localStorage.getItem("playerName"));
-  } else {
-    currentSetting.playerName = $("#player_name").val();
-  }
-
-  if (localStorage.getItem("totalCards")) {
-    currentSetting.totalCards = localStorage.getItem("totalCards");
+  let currentSetting = settings.val;
+  if (currentSetting.playerName && currentSetting.totalCards) {
+    $("#player_name").val(currentSetting.playerName);
     $("#num_cards").val(currentSetting.totalCards);
   } else {
-    currentSetting.totalCards = $("#num_cards").val();
+    settings.val = {
+      name: $("#player_name").val(),
+      totalCards: $("#num_cards").val(),
+    };
+    currentSetting = settings.val;
   }
 
-  currentSetting.totalCards = $("#num_cards").val();
-  suffledCard = prepareRandomCards(
-    images.cards.slice(0, currentSetting.totalCards / 2)
-  );
-  const currentArrangement = grid[currentSetting.totalCards];
-  let imagesEl = "Please enter add your name from the setting tab";
   if (currentSetting.playerName) {
-    if (localStorage.getItem("high_score")) {
-      $("#high_score").html(
-        `High score : ${localStorage.getItem("high_score")}%`
-      );
+    if (scores.highScore) {
+      $("#high_score").html(`High score : ${scores.highScore}%`);
     }
     $("#player").html(`Player : ${currentSetting.playerName}`);
-    imagesEl = "";
-    let ids = 0;
-    for (let i = 0; i < currentArrangement[0]; i++) {
-      imagesEl += "<div>";
-      for (let j = 0; j < currentArrangement[1]; j++) {
-        const imgUrl = generateImageUrl(images.backCard);
-        imagesEl += `<a id="${imgUrl}" href="#">
-        <img id="img_${ids}" cardid="${
-          suffledCard[ids].split(".")[0]
-        }" class="card" src="${imgUrl}" alt="card" />
-        </a>`;
-        ids++;
-      }
-      imagesEl += "</div>";
-    }
   }
-  $("#cards").html(imagesEl);
+  $("#cards").html(cards.generateCards(currentSetting.totalCards));
   $("#cards").click(onImgClickHandler);
   $("#save_settings").click(onSaveSettingClickHandler);
 });
